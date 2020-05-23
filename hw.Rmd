@@ -1,0 +1,96 @@
+---
+title: "hw"
+author: "Anne-Marie Parkinson"
+date: "May 22, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data <- read.csv("data.csv")
+```
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(ggplot2)
+library(purrr)
+library(pracma)
+```
+
+```{r}
+#temperature change
+T_none <- 0
+T_low <- 2
+T_high <- 8
+
+#parameters
+delta <- 0.005
+nu <- 0.5
+g <-  0.01
+beta <- 0.05
+
+# 2B parameters
+T_mod <- 4.4
+delta_high <- 0.005*1.1
+nu_high <-  1.1*0.5
+g_high <-   1.1*0.01
+beta_high <-1.1*0.05
+
+```
+
+```{r}
+
+data <- data %>% 
+  #temperature
+  mutate(Temp_0 = pmin(((T_none*t_year)/100), T_none),
+         Temp_2 = pmin(((T_low*t_year)/100), T_low),
+         Temp_8 = pmin(((T_high*t_year)/100), T_high)) %>% 
+  # K(t)
+  mutate(K_t_0 = exp(-1*beta*Temp_0*(t_year^2)),
+         K_t_2 = exp(-1*beta*Temp_2*(t_year^2)),
+         K_t_8 = exp(-1*beta*Temp_8*(t_year^2))) %>% 
+  #consumtion: C(t)
+  mutate(C_t_0 = K_t_0*exp(g*t_year),
+         C_t_2 = K_t_2*exp(g*t_year),
+         C_t_8 = K_t_8*exp(g*t_year)) %>% 
+  #utility (undiscounted)
+  mutate(U_undiscounted_t_0 = (C_t_0^(1-nu))/(1-nu),
+         U_undiscounted_t_2 = (C_t_2^(1-nu))/(1-nu),
+         U_undiscounted_t_8 = (C_t_8^(1-nu))/(1-nu))
+
+```
+
+#Plot Q1A: Temperature 
+```{r}
+
+ggplot(data)+
+  geom_line(aes(x = t_year, y = Temp_0)) +
+  geom_line(aes(x = t_year, y = Temp_2)) +
+  geom_line(aes(x = t_year, y = Temp_8))
+
+```
+
+#Plot K(t)
+```{r}
+
+ggplot(data)+
+  geom_line(aes(x = t_year, y = K_t_0)) +
+  geom_line(aes(x = t_year, y = K_t_2)) +
+  geom_line(aes(x = t_year, y = K_t_8))
+
+```
+
+#Plot Q1B: C(t)
+```{r}
+
+ggplot(data)+
+  geom_line(aes(x = t_year, y = C_t_0)) +
+  geom_line(aes(x = t_year, y = C_t_2)) +
+  geom_line(aes(x = t_year, y = C_t_8))
+
+```
+
